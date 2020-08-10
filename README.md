@@ -1,4 +1,4 @@
-# cms管理系统对应服务端
+# management-system管理系统对应服务端
     开发语言：node.js
     数据库：mysql
     所用框架：ORM框架Sequelize 
@@ -29,7 +29,6 @@
     1、
 
 ## 注意事项
-
 
 # 数据库常用ORM操作参考
 ## 新增
