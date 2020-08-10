@@ -21,7 +21,6 @@ const fn_add = async ctx => {
         return ctx.body = errorMessage('添加失败');
     }
 }
-
 //修改菜单
 const fn_update = async ctx => {
     let data = ctx.request.body;

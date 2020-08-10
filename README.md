@@ -1,4 +1,38 @@
-# 新增
+# cms管理系统对应服务端
+    开发语言：node.js
+    数据库：mysql
+    所用框架：ORM框架Sequelize 
+    整体架构：模拟mvc开发模式，models模型、controllers业务实现、validator数据验证
+
+## 目录文件介绍
+    config          数据库配置、邮件发送配置、token签名秘钥和端口
+    controlllers    业务逻辑实现模块，暴露路由和对应实现函数
+    database        Sequelize连接数据库配置
+    moduls          数据库模型控制模块
+    public/upload   文件上传目录
+    validator       数据、表单提交验证模块
+    app.js          服务器入口文件
+    controller.js   路由统一处理文件
+    model.js        遍历输出全部模型
+    validator.js    遍历输出全部验证文件
+    utils.js        全局通用函数 
+
+## 已实现功能点
+    1、token登陆权限控制
+    2、邮件发送
+    3、文件上传
+    4、登陆、注册、修改密码
+    5、菜单管理、用户管理、个人信息设置
+    6、未封装的 websocket 模块
+
+## 运行步骤
+    1、
+
+## 注意事项
+
+
+# 数据库常用ORM操作参考
+## 新增
 // 方法1：build后对象只存在于内存中，调用save后才操作db
 var user = User.build({
     'emp_id': '1',
@@ -16,7 +50,7 @@ var user = yield User.create({
 });
 console.log(user.get({'plain': true}));
 
-# 修改
+## 修改
 // 方法1：操作对象属性（不会操作db），调用save后操作db
 user.nick = '小白';
 user = yield user.save();
@@ -40,7 +74,7 @@ user = yield user.update(
     {'fields': ['nick']}
 });
 这样就只会更新nick字段，而emp_id会被忽略。这种方法在对表单提交过来的一大推数据中只更新某些属性的时候比较有用
-# 删除
+## 删除
 yield user.destroy();
 
 # 查看
@@ -137,5 +171,3 @@ var affectedRows = yield User.update(
         }
     }
 );
-
-## 验证

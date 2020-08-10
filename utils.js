@@ -3,7 +3,6 @@ const { MAIL_CONFIG } = require('./config/config_pub');
 const fs = require('fs');
 const path = require('path');
 
-
 //发送邮件
 const sendMail = user => {
     let transporter = nodemailer.createTransport({
@@ -104,6 +103,7 @@ const menuToTree = (menu = []) => {
 //     // reader.pipe(upStream);
 // }
 
+//检测上传的文件夹是否存在，不存在要先创建
 const checkDirExist = dir => {
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir);
