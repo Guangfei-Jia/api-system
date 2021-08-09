@@ -10,12 +10,12 @@ const fn_add = async ctx => {
         return ctx.body = errors;
     }
     try {
-        const { user_id, role_id } = data;
+        const { id, role_id } = data;
         //此处应该使用事务
-        await RoleUser.destroy({ where: { user_id } }); 
+        await RoleUser.destroy({ where: { user_id: id } }); 
         const createAll = role_id.map( item => {
             return item = {
-                user_id,
+                user_id: id,
                 role_id: item
             }
         });
@@ -30,7 +30,7 @@ const fn_add = async ctx => {
 //查询用户对应全部角色
 const fn_list = async ctx => {
     try {
-        const { id } = ctx.params;
+        const { id } = ctx.request.query;
         RoleUser.belongsTo(Role,{foreignKey:'role_id'});
 
         let result = await RoleUser.findAll({
@@ -50,5 +50,5 @@ const fn_list = async ctx => {
 
 module.exports = [
     {method: 'POST', path: '/limit/role/add', func: fn_add},
-    {method: 'GET', path: '/limit/role/list/:id', func: fn_list},
+    {method: 'GET', path: '/limit/role/list', func: fn_list},
 ]

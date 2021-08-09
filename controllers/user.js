@@ -1,6 +1,6 @@
 const { User } = require('../model');                                       //全部实例模型
 const { sendMail, errorMessage, successMessage } = require('../utils');
-const { pub_register, pub_updataPassword, pub_sendMail } = require('../validator'); 
+const { pub_register, pub_updataPassword, pub_sendMail, pub_updateUser } = require('../validator'); 
 const bcrypt = require('bcrypt');                                           //密码加密解密模块 
 const saltRounds = 10;                                                      //密码加密级别
 
@@ -72,7 +72,7 @@ const fn_sendMail = async ctx => {
     }
     let { username, email } = ctx.request.body;
     try {
-        let user = await User.findOne({where: {username}, attributes: ['username', 'email']});
+        let user = await User.findOne({where: {username}});
         if(!user){
             return ctx.body = errorMessage('当前用户不存在!');
         }
@@ -82,7 +82,13 @@ const fn_sendMail = async ctx => {
         }
         try {
             await sendMail(user); //发送邮件
-            return ctx.body = successMessage('邮件发送成功！');
+            
+            //重置为初始密码
+            const salt = bcrypt.genSaltSync(saltRounds);
+            const newPass = bcrypt.hashSync("Qwer@1234", salt);
+            user.password = newPass;
+            await user.save();
+            return ctx.body = successMessage('密码已重置，请进入邮箱查看！');
         } catch (error) {
             return ctx.body = errorMessage('邮件发送失败!');
         }
@@ -98,7 +104,7 @@ const fn_updateSelf = async ctx => {
     if(!user){
         return ctx.body = errorMessage('当前数据不存在!');
     }
-    let updateResult = user.update({
+    let updateResult = await user.update({
         email, name, mobile, head_thumb
     })
     return ctx.body = successMessage('修改成功！', updateResult);
@@ -147,7 +153,7 @@ const fn_list = async ctx => {
     }
     //普通分页
     let result = await User.findAndCountAll( {
-        attributes: ['id', 'name', 'mobile', 'email', 'bz', 'head_thumb', 'updatedAt'], 
+        attributes: ['id', 'name', 'username', 'mobile', 'email', 'bz', 'head_thumb', 'updatedAt'], 
         where: wheres,
         limit: pageSize, 
         offset: (pageNum - 1) * pageSize
@@ -157,12 +163,17 @@ const fn_list = async ctx => {
 
 //管理员--修改账号信息
 const fn_update = async ctx => {
+    const {errors, isValid} = pub_updateUser(ctx.request.body); 
+    //判断ifValid是否通过验证
+    if(!isValid){
+        return ctx.body = errors;
+    }
     const { id, email = '', name = '', mobile = '', bz = ''  } = ctx.request.body;
     let user = await User.findOne({ where: { id } });
     if(!user){
         return ctx.body = errorMessage('当前数据不存在!');
     }
-    let updateResult = user.update({
+    let updateResult = await user.update({
         email, name, mobile, bz
     })
     return ctx.body = successMessage('修改成功！', updateResult);

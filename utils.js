@@ -19,7 +19,7 @@ const sendMail = user => {
         from: `"xxxxx发送邮件公司名称" <${MAIL_CONFIG.USER}>`, // 发送邮件的地址 // login user must equal to this user
         to: user.email, //接收邮件地址
         subject: '你有一条新消息',// 邮件主题
-        html: `<div style="color:red;">${user.username},您好，请点击以下链接重置密码：</div>` //以HTML的格式显示，这样可以显示图片、链接、字体颜色等信息
+        html: `<div style="color:red;">${user.username},您好，您的密码已经初始化为Qwer@1234：</div>` //以HTML的格式显示，这样可以显示图片、链接、字体颜色等信息
     };
     return transporter.sendMail(mailOptions);
 }
@@ -37,7 +37,8 @@ const successMessage = (message, data = {}) => {
 const errorMessage = message => {
     return {
         code: -1,
-        message: message
+        message: message,
+        data:[]
     }
 }
 
@@ -52,7 +53,10 @@ const isEmptys = value =>{
 const arrayRepeatForReduce = (arrs, key) => {
     let obj = {};
     return arrs.reduce( (prev, next) => {
-        obj[next[key]] ? '' : obj[next[key]] = true && prev.push(next);
+        console.log(next)
+        if(next){
+            obj[next[key]] ? '' : obj[next[key]] = true && prev.push(next);
+        }
         return prev;
     },[]);
 }

@@ -1,4 +1,4 @@
-const { Menu } = require('../model');                                  //全部实例模型
+const { Menu, RoleMenu } = require('../model');                                  //全部实例模型
 const { menu_val } = require('../validator');                                  //
 const { errorMessage, successMessage, menuToTree } = require('../utils');
 
@@ -34,7 +34,7 @@ const fn_update = async ctx => {
         if(!result){
             return ctx.body = errorMessage('当前数据不存在!');
         }
-        let updateResult = result.update({
+        let updateResult = await result.update({
             name, router_url, router_param, outer_url, icon_url, order, router_param_val, router_type,
             update_user: ctx.state.user.user_id
         })
@@ -52,19 +52,27 @@ const fn_update = async ctx => {
 /**
  * 遗留功能
  * 删除对应子菜单
- * 批量添加子菜单
  */
 const fn_delete = async ctx => {
     try {
-        const { id } = ctx.params,
+        const { id } = ctx.request.query,
               idArray = id.split(',').map((item) => { return item = parseInt(item)});
         let result = 0,
-            wheres = { id: id };
+            wheres = { $or:[{id: id},{parent_id: id}] },
+            wheresRole = { menu_id: id };
         if(idArray.length > 1){
-            //批量删除条件控制
+            //批量删除条件控制 
             wheres = { id: {$in:idArray} };
+            wheresRole = { menu_id: {$in:idArray} }
         }
-        result = await Menu.destroy({where: wheres});
+        result = await Menu.destroy({where: wheres});   //删除菜单,子菜单
+        RoleMenu.destroy({where: wheresRole});          //删除当前菜单与角色的关系
+
+        let childMenu = await Menu.findAll( {
+            attributes: ['id'],
+            where: {parent_id: id},
+        });
+        console.log(childMenu)
         return ctx.body = successMessage('删除成功', {count: result});
     } catch (error) {
         console.log(error);
@@ -81,12 +89,12 @@ const fn_list = async ctx => {
     //将modle数据转换为json处理，生成菜单树
     result = JSON.parse(JSON.stringify(result));
     let resultTree = menuToTree(result);
-    return ctx.body = successMessage('', resultTree);
+    return ctx.body = successMessage('', {count:1,rows:resultTree});
 }
 
 module.exports = [
     {method: 'POST', path: '/menu/add', func: fn_add},
     {method: 'PUT', path: '/menu/update', func: fn_update},
-    {method: 'DELETE', path: '/menu/delete/:id', func: fn_delete},
-    {method: 'GET', path: '/menu/list', func: fn_list},
+    {method: 'DELETE', path: '/menu/delete', func: fn_delete},
+    {method: 'POST', path: '/menu/list', func: fn_list},
 ]

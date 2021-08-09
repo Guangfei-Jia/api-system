@@ -17,7 +17,6 @@ app.use(async (ctx,next) =>{
     const start = new Date().getTime();
     await next();
     const ms = new Date().getTime() - start;
-    console.log(ms);
 })
 
 //中间件，验证token
@@ -92,74 +91,80 @@ console.log('app started at port 8090...');
 /** 
  * websocket模块 可正常使用，待完善和提取模块
 */
-// const WebSocket = require('ws');
-// const WebSocketServer = WebSocket.Server;
-// const wss = new WebSocketServer(
-//     {server:server}
-// );
-// wss.on('connection', function(ws){
-//     ws.on('message', function(message){
-//         var data = JSON.parse(message);
-//         console.log(data);
-//         switch (data.type) {
-//             case 'join':
-//                 ws.nickname = data.name;
-//                 sendMessage(createMessage('join', '', data.name + ' 加入房间'));
-//                 sendMessage(createMessage('userList', getAllChater(),''));
-//                 break;
-//             case 'message':
-//                 let userdata = {
-//                     name: data.name,
-//                     message: data.message
-//                 }
-//                 sendMessage(createMessage('message', '',userdata));
-//                 break;
-//             default:
-//                 break;
-//         }
-//     });
-//     ws.on('close',function(){
-//         sendMessage(createMessage('join', '', ws.nickname + ' 离开房间'));
-//         sendMessage(createMessage('userList', getAllChater(),''));
-//     });
-//     ws.on('error',function(erro){
-//         console.log(error);
-//     })
-// })
-// var messageIndex = 0;
-// function createMessage(type, userList, data) {
-//     messageIndex ++;
-//     return JSON.stringify({
-//         id: messageIndex,
-//         type: type,
-//         userList: userList,
-//         data: data
-//     });
-// }
-// function sendMessage(msg){
-//     wss.clients.forEach(function each(client) {
-//         //全部广播
-//         if (client.readyState === WebSocket.OPEN) {
-//           client.send(msg);
-//         }
-//         // //除自己以外广播
-//         // if (client !== ws && client.readyState === WebSocket.OPEN) {
-//         //     client.send(data);
-//         // }
-//     });
-// }
+const WebSocket = require('ws');
+const WebSocketServer = WebSocket.Server;
+const wss = new WebSocketServer(
+    {server:server}
+);
+wss.on('connection', function(ws){
+    ws.on('message', function(message){
+        var data = JSON.parse(message);
+        console.log(data);
+        switch (data.type) {
+            case 'join':
+                ws.nickname = data.name;
+                sendMessage(createMessage('join', '', data.name + ' 加入房间'));
+                sendMessage(createMessage('userList', getAllChater(),''));
+                break;
+            case 'message':
+                let userdata = {
+                    name: data.name,
+                    message: data.message
+                }
+                sendMessage(createMessage('message', '',userdata));
+                break;
+            default:
+                break;
+        }
+    });
+    ws.on('close',function(){
+        sendMessage(createMessage('join', '', ws.nickname + ' 离开房间'));
+        sendMessage(createMessage('userList', getAllChater(),''));
+    });
+    ws.on('error',function(erro){
+        console.log(error);
+    })
+})
+var messageIndex = 0;
+function createMessage(type, userList, data) {
+    messageIndex ++;
+    return JSON.stringify({
+        id: messageIndex,
+        type: type,
+        userList: userList,
+        data: data
+    });
+}
+function sendMessage(msg){
+    wss.clients.forEach(function each(client) {
+        //全部广播
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(msg);
+        }
+        // //除自己以外广播
+        // if (client !== ws && client.readyState === WebSocket.OPEN) {
+        //     client.send(data);
+        // }
+    });
+}
 
-// //全部的用户
-// function getAllChater(){
-//     var allChater = [];
-//     wss.clients.forEach(function each(client) {
-//         if (client.readyState === WebSocket.OPEN) {
-//             let dt = {
-//                 name: client.nickname,
-//                 sex: 1
-//             }
-//             allChater.push(dt);
-//         }
-//     });
-//     return JSON.stringify(allChater);
-// }
+//全部的用户
+function getAllChater(){
+    var allChater = [];
+    wss.clients.forEach(function each(client) {
+
+        if (client.readyState === WebSocket.OPEN) {
+            let dt = {
+                name: client.nickname,
+                sex: 1
+            }
+            const ifSave = allChater.some( item => {
+                return item.name === client.nickname;
+            })
+            if(!ifSave){
+                allChater.push(dt);
+            }
+        }
+    });
+    return JSON.stringify(allChater);
+}

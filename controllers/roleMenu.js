@@ -30,7 +30,7 @@ const fn_add = async ctx => {
 //查询角色对应菜单
 const fn_list = async ctx => {
     try {
-        const { id } = ctx.params;
+        const { id } = ctx.request.query;
         RoleMenu.belongsTo(Menu,{foreignKey:'menu_id'});
 
         let result = await RoleMenu.findAll({
@@ -50,5 +50,5 @@ const fn_list = async ctx => {
 
 module.exports = [
     {method: 'POST', path: '/limit/menu/add', func: fn_add},
-    {method: 'GET', path: '/limit/menu/list/:id', func: fn_list},
+    {method: 'GET', path: '/limit/menu/list', func: fn_list},
 ]

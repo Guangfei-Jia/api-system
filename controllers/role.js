@@ -1,4 +1,4 @@
-const { Role } = require('../model');                                  //全部实例模型
+const { Role, RoleMenu, RoleUser, User } = require('../model');                                  //全部实例模型
 const { role_val } = require('../validator');                                  //全部实例模型
 const { errorMessage, successMessage } = require('../utils');
 
@@ -45,21 +45,42 @@ const fn_update = async ctx => {
     }
 }
 
-//删除角色，单条或多条
+//删除角色，单条或多条，暂时不支持多条删除
 const fn_delete = async ctx => {
     try {
-        const { id } = ctx.params,
-              idArray = id.split(',').map((item) => { return item = parseInt(item)});
+        const { id } = ctx.request.query;
+            //   idArray = id.split(',').map((item) => { return item = parseInt(item)});
         let result = 0,
             wheres = { id: id };
-        if(idArray.length > 1){
-            //批量删除条件控制
-            wheres = { id: {$in:idArray} };
+
+        // if(idArray.length > 1){
+        //     //批量删除条件控制
+        //     wheres = { id: {$in:idArray} };
+        // }
+        //查看当前菜单所拥有的角色
+        RoleUser.belongsTo(User,{foreignKey:'user_id'});
+
+        //若查询到角色绑定了用户，提示取消对应用户绑定才可以删除
+        const users = await RoleUser.findAndCountAll({
+            attributes: ['id', 'user_id', 'role_id', 'updatedAt'],
+            where: { role_id: id },
+            include:[{
+                model: User,
+                attributes: [ 'name' ]
+            }]
+        })
+        if(users.count){
+            let str = ""
+            users.rows.forEach((item) => {
+                str = str + item.koa_user.name + "，"
+            })
+            return ctx.body = errorMessage('当前角色已绑定用户：' + str + '请取消绑定后再进行删除操作！');
         }
         result = await Role.destroy({where: wheres});
         if(!result){
             return ctx.body = errorMessage('删除失败');
         }
+        await RoleMenu.destroy({ where: { role_id:id } });  //删除角色时，同时删除当前角色与菜单的关联
         return ctx.body = successMessage('删除成功', {count: result});
     } catch (error) {
         console.log(error);
@@ -108,6 +129,6 @@ const fn_list = async ctx => {
 module.exports = [
     {method: 'POST', path: '/role/add', func: fn_add},
     {method: 'PUT', path: '/role/update', func: fn_update},
-    {method: 'DELETE', path: '/role/delete/:id', func: fn_delete},
+    {method: 'DELETE', path: '/role/delete', func: fn_delete},
     {method: 'POST', path: '/role/list', func: fn_list},
 ]
