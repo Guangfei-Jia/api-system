@@ -38,51 +38,50 @@ const errorMessage = message => {
     return {
         code: -1,
         message: message,
-        data:[]
+        data: []
     }
 }
 
 //判断传递的数据是否无效
-const isEmptys = value =>{
-	return value === undefined || value ===null ||
-	(typeof value ==="object"&& Object.keys(value).length===0) ||
-	(typeof valur === "string" && value.trim().length ===0)
+const isEmptys = value => {
+    return value === undefined || value === null ||
+        (typeof value === "object" && Object.keys(value).length === 0) ||
+        (typeof value === "string" && value.trim().length === 0)
 }
 
 //对象数组去重
 const arrayRepeatForReduce = (arrs, key) => {
     let obj = {};
-    return arrs.reduce( (prev, next) => {
-        console.log(next)
-        if(next){
+    return arrs.reduce((prev, next) => {
+        if (next) {
             obj[next[key]] ? '' : obj[next[key]] = true && prev.push(next);
         }
         return prev;
-    },[]);
+    }, []);
 }
 
 //菜单转换为树
 const menuToTree = (menu = []) => {
-    if(menu.length === 0) return [];
-    let resultTree = []; 
+    if (menu.length === 0) return [];
+    let resultTree = [];
     //每个菜单加入children属性，将顶级菜单提取
-    for(let item of menu){
+    for (let item of menu) {
         item.children = [];
-        if(!item.parent_id){
+        if (!item.parent_id) {
             resultTree.push(item);
         }
     }
     //根据顶级菜单构建所属子菜单
     let maps = tree => {
         menu.filter(item => {
-            if(item.parent_id == tree.id){
+            if (item.parent_id == tree.id) {
                 tree.children.push(item);
                 maps(item);
             }
         })
     }
     //循环构建菜单树
-    for(let item of resultTree){
+    for (let item of resultTree) {
         maps(item);
     }
     return resultTree;
@@ -114,7 +113,7 @@ const checkDirExist = dir => {
     }
 }
 const CURD = {
-    
+
 }
 module.exports = {
     sendMail,
