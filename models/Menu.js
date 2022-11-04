@@ -20,6 +20,11 @@ var Menu = sequelize.define('koa_menu', {
         type: INTEGER,
         comment: '父菜单id'
     },
+    level_string: {
+        type: STRING(100),
+        comment: '菜单层级串',
+        allowNull: false
+    },
     router_url: {
         type: STRING(1000),
         comment: '路由url'

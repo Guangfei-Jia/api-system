@@ -2,8 +2,8 @@
 const fs = require('fs');
 
 //路由处理
-function addMaping(router, method, path, func){
-    switch(method){
+function addMaping(router, method, path, func) {
+    switch (method) {
         case 'GET':
             router.get(path, func);
             return;
@@ -24,14 +24,14 @@ function addMaping(router, method, path, func){
 
 //添加路由
 function addControllers(router, dir) {
-    var file = fs.readdirSync(__dirname + '/' +  dir);    //获取文件夹下面文件名称列表
+    var file = fs.readdirSync(__dirname + '/' + dir);    //获取文件夹下面文件名称列表
     //筛选js文件
     var js_file = file.filter(item => {
         return item.endsWith('.js');
     })
     //遍历js文件数组
     for (let f of js_file) {
-        let mapping = require(__dirname + '/' +  dir + '/' + f);
+        let mapping = require(__dirname + '/' + dir + '/' + f);
         //动态添加每一个路由
         mapping.forEach(mp => {
             addMaping(router, mp.method, mp.path, mp.func);

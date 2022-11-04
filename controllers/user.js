@@ -1,6 +1,6 @@
 const { User, RoleUser } = require('../model');                                       //全部实例模型
 const { sendMail, errorMessage, successMessage } = require('../utils');
-const { pub_register, pub_updataPassword, pub_sendMail, pub_updateUser } = require('../validator');
+const { pub_register, pub_updataPassword, pub_sendMail, pub_updateUser, pub_addUser } = require('../validator');
 const bcrypt = require('bcryptjs');                                           //密码加密解密模块 
 const saltRounds = 10;                                                      //密码加密级别
 
@@ -154,8 +154,9 @@ const fn_list = async ctx => {
     }
     //普通分页
     let result = await User.findAndCountAll({
-        attributes: ['id', 'name', 'username', 'mobile', 'email', 'bz', 'head_thumb', 'updatedAt'],
+        attributes: ['id', 'name', 'username', 'password', 'mobile', 'email', 'bz', 'head_thumb', 'updatedAt'],
         where: wheres,
+        order: [['updatedAt', 'desc']],
         limit: pageSize,
         offset: (pageNum - 1) * pageSize
     });
@@ -180,6 +181,38 @@ const fn_update = async ctx => {
     return ctx.body = successMessage('修改成功！', updateResult);
 }
 
+//管理员--新增账号信息
+const fn_add = async ctx => {
+    const { errors, isValid } = pub_addUser(ctx.request.body);
+    //判断ifValid是否通过验证
+    if (!isValid) {
+        return ctx.body = errors;
+    }
+    const { username = '', password = '', email = '', name = '', mobile = '', bz = '' } = ctx.request.body;
+    try {
+        let user = await User.findOne({
+            where: { name }
+        });
+        if (user) {
+            return ctx.body = errorMessage('当前用户已存在!');
+        }
+        //密码hash加密
+        const salt = bcrypt.genSaltSync(saltRounds);
+        const newPassword = bcrypt.hashSync(password, salt);
+        await User.create({
+            username,
+            password: newPassword,
+            email,
+            name,
+            mobile,
+            bz
+        });
+        return ctx.body = successMessage('创建成功');
+    } catch (error) {
+        console.log(error);
+    }
+}
+
 module.exports = [
     { method: 'POST', path: '/register', func: fn_register },
     { method: 'POST', path: '/updatePassword', func: fn_updatePassword },
@@ -188,5 +221,6 @@ module.exports = [
     { method: 'POST', path: '/user/list', func: fn_list },
     { method: 'PUT', path: '/user/updateSelf', func: fn_updateSelf },
     { method: 'PUT', path: '/user/update', func: fn_update },
+    { method: 'POST', path: '/user/add', func: fn_add },
     { method: 'GET', path: '/user/detail', func: fn_detailSelf },
 ]
