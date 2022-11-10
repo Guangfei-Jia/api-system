@@ -26,14 +26,14 @@
     6、未封装的 websocket 模块
 
 ## 运行步骤
-    目前需要手动插入菜单数据、角色数据，后面会优化为初始化数据库时自动插入admin账户及相关菜单、角色
+    
     1、根目录 npm install
     2、修改config下的config_db.js文件：
         配置自己的mysql数据库相关
     3、修改database中sequelize.js文件：
         将sequelize.sync()启用，用于在mysql数据库初始化系统表
     4、直接在表中插入用户，或者执行nodemon app 启用服务后，在vue项目中注册
-    5、目前需要在表中手动插入菜单和角色，否则无法进入系统；
+    5、目前需要手动插入菜单数据、角色数据，初始数据插入sql存储在database目录下，自行取用
 
 ## 注意事项
 
